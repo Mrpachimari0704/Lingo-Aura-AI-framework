@@ -1,61 +1,63 @@
 Lingo-Aura: Cognitive-Informed Multimodal Sentiment Analysis
+Lingo-Aura: Cognitive-Informed Multimodal Sentiment Analysis System
 📂 Project Overview
-This project implements a multimodal sentiment analysis framework based on Large Language Models (Mistral-7B/Phi-2). The core innovation lies in introducing Cognitive Labels as prompts and designing a Double MLP + Mean Pooling lightweight architecture, combined with InfoNCE Contrastive Learning and Hierarchical Warmup strategy, achieving significant improvement in sentiment intensity prediction (Correlation) on the CMU-MOSEI dataset.
-📦 Core Deliverables
+This project implements a multimodal sentiment analysis framework based on large language models (Mistral-7B/Phi-2). The core innovation lies in introducing Cognitive Labels as prompts and designing a lightweight architecture of Double MLP + Mean Pooling, combined with InfoNCE contrastive learning and hierarchical warmup strategy, achieving significant improvement in sentiment intensity prediction (Correlation) on the CMU-MOSEI dataset.
+📦 Key Deliverables
 Before viewing the code, it is recommended to read the following documents first to understand the core technical approach and experimental conclusions:
 
-Technical_Report.pdf / Technical_Report.docx
-📄 [MOST IMPORTANT] Complete project technical report. Includes model architecture diagrams, SOTA comparison, ablation experiment analysis, and final conclusions.
-Tech_Picture.pptx
+技术报告.pdf / 技术报告.docx
+📄 [Most Important] Complete project technical report. Includes model architecture diagrams, SOTA comparison, ablation experiment analysis, and final conclusions.
+技术图片.pptx
 📊 Editable source files for all architecture diagrams in the report.
 
 
 🗂️ File Structure
-The folder contains scripts and logs from multiple experimental iterations. Here's an explanation of the key files:
-1. Core Code (Main Scripts)
-This is the final best-performing version, recommended for use:
+The folder contains scripts and logs from multiple experimental iterations. The following is a classification of key files:
+1. Main Scripts
+This is the final version with the best validated performance, recommended for use:
 
-Training Script:
+Training:
 
 train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py
-Description: This is the final winning solution. Single-GPU training script integrating Double MLP, Mean Pooling, Dropout(0.2), Contrastive Loss(0.25 weight), and hierarchical warmup strategy.
+Description: This is the final winning solution. A single-card training script integrating Double MLP, Mean Pooling, Dropout(0.2), contrastive loss (0.25 weight), and hierarchical warmup strategy.
 
 
-Inference/Evaluation Script:
+Inference:
 
-inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py
-Description: Includes Few-Shot guidance and Prefix-Forcing strategy, used to generate final Acc and Corr metrics.
+inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py (need to confirm the specific inference script filename used, usually matching the above training script)
+Description: Includes Few-Shot guidance and Prefix-Forcing strategy for generating final Acc and Corr metrics.
 
 
 Data Processing:
 
-generate_cognitive_labels.py: Script to call DeepSeek API for generating cognitive labels.
+generate_cognitive_labels.py: Script for calling DeepSeek API to generate cognitive labels.
 
 
 
-2. Ablation Experiments & Historical Versions
-To reproduce comparative experiments from the report, the following variant scripts are retained:
+2. Ablation & History
+To reproduce the comparative experiments in the report, the following variant scripts are retained:
 
 train_ablation_text_only.py: Text-only ablation experiment script (no cognitive)
-train_full_model_lora_r16_normalize_Mistral7b.py: Ablation experiment script without contrastive loss
+train_full_model_lora_r16_normalize_Mistral7b.py: Ablation experiment script without contrastive loss, etc.
 train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss1.0_Projectorwarm_singlecard.py: Ablation experiment script without dropout
-..._ddp_...py: Multi-GPU distributed training versions (for acceleration, but more complex configuration)
-..._nolora.py: Full fine-tuning or frozen baselines without LoRA (for comparison)
-..._noacoustic.py / ..._novision.py: Single-modality ablation experiment scripts
-......: (Other experimental variants)
+..._ddp_...py: Multi-GPU distributed training version (for acceleration, but more complex configuration).
+..._nolora.py: Full fine-tuning or frozen baseline without LoRA (for comparison).
+..._noacoustic.py / ..._novision.py: Single-modality ablation experiment scripts.
+..._contrastloss1.0...py: Experimental version with contrastive loss weight of 1.0 (less effective than 0.25).
+......:
 
 3. Logs & Outputs
 
-*.out / *.log: Console log records of training process
-output/: Directory for saving model weights (Checkpoint), adapters, and normalization statistics
+*.out / *.log: Console log records of the training process.
+output/: Directory for saving model weights (Checkpoint), adapters (Adapter), and normalization statistics.
 
 
 🚀 Quick Start
 1. Environment Setup
-Ensure Python 3.12+ and the following core libraries are installed:
+Ensure Python 3.12+ is installed along with the following core libraries:
 bashpip install torch transformers peft pandas numpy tqdm mmsdk scikit-learn
 2. Data Preparation
-Ensure the following files are in the data/cmumosei/ directory:
+Please ensure the data/cmumosei/ directory contains the following files:
 
 CMU_MOSEI_VisualFacet42.csd
 CMU_MOSEI_COVAREP.csd
@@ -63,31 +65,17 @@ CMU_MOSEI_TimestampedWords.csd
 CMU_MOSEI_Labels.csd
 cmu_mosei_with_cognitive_labels_v4.csv (generated by generate_cognitive_labels.py)
 
-3. Run Training
-Use the final recommended configuration for training (single-GPU mode):
+3. Training
+Train with the final recommended configuration (single-card mode):
 bashnohup python train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py > train.log 2>&1 &
-4. Run Evaluation
-Load the trained weights for testing:
+4. Evaluation
+Load trained weights for testing:
 bashpython inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py
 
-📊 Experimental Results Summary
+📊 Experimental Conclusions Overview
 Based on the final model (Mistral-7B + Double MLP + Contrastive 0.25 + Dropout):
 
 Accuracy (Acc-2): ~79.9% (on par with text-only baseline, successful noise resistance)
-Correlation (r): ~0.15 (compared to text-only, 135% improvement, achieved sentiment intensity perception capability)
+Correlation (r): ~0.15 (compared to text-only, 135% improvement, acquired sentiment intensity perception capability)
 
-For detailed analysis, please refer to Technical_Report.pdf.
-
-🏗️ Architecture Diagrams
-Overall System Framework
-Show Image
-Figure: The complete pipeline of Lingo-Aura, including cognitive label generation (left) and multimodal training (right)
-Cognitive Label Generation
-Show Image
-Figure: Using DeepSeek-V3 as a teacher LLM to generate structured cognitive labels
-Double-MLP Projector Architecture
-Show Image
-Figure: Lightweight multimodal adapter with Double-MLP and Global Mean Pooling
-Performance Comparison
-Show Image
-Figure: Lingo-Aura vs Text-Only baseline - significant improvement in Correlation (+135%)
+For detailed analysis, please refer to 技术报告.pdf.
