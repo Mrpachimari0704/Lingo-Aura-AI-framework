@@ -1,0 +1,7 @@
+*.out
+*.log
+output/
+data/
+*.zip
+__pycache__/
+*.pyc

@@ -1,0 +1,7 @@
+### Human:
+Analyze the sentiment of the following transcription.
+
+Transcription: {transcription}
+
+### Assistant:
+Based on the multimodal cues, the emotion score is {emotion_score}.

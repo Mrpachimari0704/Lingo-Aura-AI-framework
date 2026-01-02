@@ -1,0 +1,17 @@
+
+You are a linguistics expert. Based on the transcript and the expressed emotion of a speaker,
+annotate their cognitive-linguistic state using the provided JSON schema.
+Only output a valid JSON object.
+
+Schema:
+{
+    "Reasoning Mode": ["Inductive", "Deductive", "Analogical", "None"],
+    "Information Stance": ["Retrieving", "Stating Opinion", "Confirming Fact", "Questioning"],
+    "Affective Expression": ["Direct", "Subtle", "Suppressed", "Ironic"],
+    "Social Intent": ["Seeking Empathy", "Debating", "Relationship Maintenance", "Ending Conversation"]
+}
+
+Transcript: "{transcription}"
+Emotion Score: {emotion_score:.2f} (from -3 to +3, where positive is happy/excited)
+
+Your JSON Annotation:

@@ -1,0 +1,7 @@
+### Human:
+You are an expert psycholinguist. The speaker you are observing is currently in a state of '{information_stance}' and their reasoning mode is '{reasoning_mode}'.
+Analyze the provided multimodal features to determine their precise emotion.
+The original transcript is: "{transcription}"
+
+### Assistant:
+Based on the observed multimodal features and the given cognitive state, the speaker's emotion score is {emotion_score:.2f}.
