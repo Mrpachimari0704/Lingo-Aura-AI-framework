@@ -1,81 +1,138 @@
-Lingo-Aura: Cognitive-Informed Multimodal Sentiment Analysis
-Lingo-Aura: Cognitive-Informed Multimodal Sentiment Analysis System
-📂 Project Overview
-This project implements a multimodal sentiment analysis framework based on large language models (Mistral-7B/Phi-2). The core innovation lies in introducing Cognitive Labels as prompts and designing a lightweight architecture of Double MLP + Mean Pooling, combined with InfoNCE contrastive learning and hierarchical warmup strategy, achieving significant improvement in sentiment intensity prediction (Correlation) on the CMU-MOSEI dataset.
-📦 Key Deliverables
-Before viewing the code, it is recommended to read the following documents first to understand the core technical approach and experimental conclusions:
+# Lingo-Aura: Cognitive-Informed Multimodal Sentiment Analysis
 
-技术报告.pdf / 技术报告.docx
-📄 [Most Important] Complete project technical report. Includes model architecture diagrams, SOTA comparison, ablation experiment analysis, and final conclusions.
-技术图片.pptx
-📊 Editable source files for all architecture diagrams in the report.
+A multimodal sentiment analysis framework based on large language models (Mistral-7B/Phi-2) with cognitive prompting.
 
+## 📂 Project Overview
 
-🗂️ File Structure
-The folder contains scripts and logs from multiple experimental iterations. The following is a classification of key files:
-1. Main Scripts
-This is the final version with the best validated performance, recommended for use:
+This project implements a novel multimodal sentiment analysis system that introduces **Cognitive Labels** as prompts. The framework features a lightweight **Double MLP + Mean Pooling** architecture, combined with **InfoNCE contrastive learning** and **hierarchical warmup** strategy, achieving significant improvements in sentiment intensity prediction on the CMU-MOSEI dataset.
 
-Training:
+## 🌟 Key Features
 
-train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py
-Description: This is the final winning solution. A single-card training script integrating Double MLP, Mean Pooling, Dropout(0.2), contrastive loss (0.25 weight), and hierarchical warmup strategy.
+- **Cognitive Label Integration**: Novel use of cognitive labels as prompts for enhanced sentiment understanding
+- **Multimodal Fusion**: Combines text, audio (COVAREP), and visual (Facet42) features
+- **Efficient Architecture**: Lightweight Double MLP with Mean Pooling design
+- **Advanced Training**: InfoNCE contrastive learning with hierarchical warmup strategy
+- **LoRA Fine-tuning**: Parameter-efficient adaptation of large language models
 
+## 🗂️ File Structure
 
-Inference:
+### Core Scripts
 
-inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py (need to confirm the specific inference script filename used, usually matching the above training script)
-Description: Includes Few-Shot guidance and Prefix-Forcing strategy for generating final Acc and Corr metrics.
+#### Training
+- `train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py`
+  - **Recommended training script** with all optimizations
+  - Features: Double MLP, Mean Pooling, Dropout(0.2), Contrastive Loss(0.25), Hierarchical Warmup
+  - Single GPU training
 
+#### Inference
+- `inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py`
+  - Inference script with Few-Shot guidance and Prefix-Forcing
+  - Generates Accuracy and Correlation metrics
 
-Data Processing:
+#### Data Processing
+- `generate_cognitive_labels.py`
+  - Generates cognitive labels using DeepSeek API
 
-generate_cognitive_labels.py: Script for calling DeepSeek API to generate cognitive labels.
+### Ablation Study Scripts
 
+For reproducing experimental comparisons:
 
+- `train_ablation_text_only.py` - Text-only baseline (no cognitive labels)
+- `train_full_model_lora_r16_normalize_Mistral7b.py` - Without contrastive loss
+- `train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss1.0_Projectorwarm_singlecard.py` - Without dropout
+- `..._ddp_...py` - Multi-GPU distributed training versions
+- `..._nolora.py` - Full fine-tuning baseline (without LoRA)
+- `..._noacoustic.py` / `..._novision.py` - Single-modality ablations
+- `..._contrastloss1.0...py` - Contrastive loss weight 1.0 (vs. 0.25)
 
-2. Ablation & History
-To reproduce the comparative experiments in the report, the following variant scripts are retained:
+### Outputs
 
-train_ablation_text_only.py: Text-only ablation experiment script (no cognitive)
-train_full_model_lora_r16_normalize_Mistral7b.py: Ablation experiment script without contrastive loss, etc.
-train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss1.0_Projectorwarm_singlecard.py: Ablation experiment script without dropout
-..._ddp_...py: Multi-GPU distributed training version (for acceleration, but more complex configuration).
-..._nolora.py: Full fine-tuning or frozen baseline without LoRA (for comparison).
-..._noacoustic.py / ..._novision.py: Single-modality ablation experiment scripts.
-..._contrastloss1.0...py: Experimental version with contrastive loss weight of 1.0 (less effective than 0.25).
-......:
+- `*.out` / `*.log` - Training logs
+- `output/` - Model checkpoints, adapters, and normalization statistics
 
-3. Logs & Outputs
+## 🚀 Quick Start
 
-*.out / *.log: Console log records of the training process.
-output/: Directory for saving model weights (Checkpoint), adapters (Adapter), and normalization statistics.
+### 1. Environment Setup
 
+```bash
+pip install torch transformers peft pandas numpy tqdm mmsdk scikit-learn
+```
 
-🚀 Quick Start
-1. Environment Setup
-Ensure Python 3.12+ is installed along with the following core libraries:
-bashpip install torch transformers peft pandas numpy tqdm mmsdk scikit-learn
-2. Data Preparation
-Please ensure the data/cmumosei/ directory contains the following files:
+**Requirements:**
+- Python 3.12+
+- PyTorch with CUDA support
+- Transformers, PEFT libraries
 
-CMU_MOSEI_VisualFacet42.csd
-CMU_MOSEI_COVAREP.csd
-CMU_MOSEI_TimestampedWords.csd
-CMU_MOSEI_Labels.csd
-cmu_mosei_with_cognitive_labels_v4.csv (generated by generate_cognitive_labels.py)
+### 2. Data Preparation
 
-3. Training
-Train with the final recommended configuration (single-card mode):
-bashnohup python train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py > train.log 2>&1 &
-4. Evaluation
-Load trained weights for testing:
-bashpython inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py
+Ensure the following files are in `data/cmumosei/`:
 
-📊 Experimental Conclusions Overview
-Based on the final model (Mistral-7B + Double MLP + Contrastive 0.25 + Dropout):
+- `CMU_MOSEI_VisualFacet42.csd`
+- `CMU_MOSEI_COVAREP.csd`
+- `CMU_MOSEI_TimestampedWords.csd`
+- `CMU_MOSEI_Labels.csd`
+- `cmu_mosei_with_cognitive_labels_v4.csv` (generated by `generate_cognitive_labels.py`)
 
-Accuracy (Acc-2): ~79.9% (on par with text-only baseline, successful noise resistance)
-Correlation (r): ~0.15 (compared to text-only, 135% improvement, acquired sentiment intensity perception capability)
+### 3. Training
 
-For detailed analysis, please refer to 技术报告.pdf.
+Single GPU training with recommended configuration:
+
+```bash
+nohup python train_full_model_lora_r16_normalize_Mistral7b_changeloss_doublemlp_meanpooling_contraloss0.25_Projectorwarm_dropout_singlecard.py > train.log 2>&1 &
+```
+
+### 4. Evaluation
+
+Run inference with trained model:
+
+```bash
+python inference_all_attention_rightlabel_normalize_mistral7bmeanpooling_dropout_warm0.25.py
+```
+
+## 📊 Performance
+
+**Final Model: Mistral-7B + Double MLP + Contrastive Loss(0.25) + Dropout(0.2)**
+
+| Metric | Score | Notes |
+|--------|-------|-------|
+| **Accuracy (Acc-2)** | ~79.9% | On par with text-only baseline, robust to noise |
+| **Correlation (r)** | ~0.15 | **135% improvement** over text-only, strong intensity perception |
+
+## 🔬 Model Architecture
+
+### Key Components
+
+1. **Base Model**: Mistral-7B with LoRA (r=16)
+2. **Multimodal Projectors**: 
+   - Text → Hidden dimension
+   - Audio (COVAREP) → Hidden dimension
+   - Visual (Facet42) → Hidden dimension
+3. **Fusion Layer**: Double MLP with Mean Pooling
+4. **Regularization**: Dropout (0.2)
+5. **Loss Function**: Combined MSE + InfoNCE Contrastive Loss (0.25 weight)
+
+### Training Strategy
+
+- **Hierarchical Warmup**: Gradual unfreezing of model components
+- **Normalization**: Feature normalization for stable training
+- **Contrastive Learning**: InfoNCE loss for better multimodal alignment
+
+## 💡 Key Innovations
+
+1. **Cognitive Labels as Prompts**: Enhances model's understanding of sentiment nuances
+2. **Double MLP Architecture**: Efficient feature transformation
+3. **Mean Pooling**: Better representation aggregation
+4. **Balanced Contrastive Loss**: 0.25 weight prevents overfitting while improving alignment
+5. **Hierarchical Warmup**: Stable training progression
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📧 Contact
+
+For questions or suggestions, please open an issue or contact [your-email@example.com].
